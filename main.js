@@ -3,12 +3,12 @@ const linky = require('linky');
 const https = require('https');
 require('dotenv').config();
 
-let sessionLinky;
 const UP = process.env.UP;
 const AT = process.env.AT;
 const RT = process.env.RT;
 const FREE_USER = process.env.FREE_USER;
 const FREE_PASS = process.env.FREE_PASS;
+
 
 function openSessionLinky(accessToken, refreshToken) {
     console.log("Refresh Linky Connection")
@@ -62,13 +62,30 @@ async function workflowData(startTime, endTime, semaine = false) {
 async function worflowSendFreeSMS(sms) {
     const apiUrl = `https://smsapi.free-mobile.fr/sendmsg?user=${FREE_USER}&pass=${FREE_PASS}&msg=${sms}`;
 
-    console.log(sms);
+    console.log("SMS = " + sms);
 
     https.get(apiUrl, function(res) {
-        if(res !== 200) console.log("Une erreur est survenu pendant l'envois du SMS")
-        res.resume();
-    }).on('error', function(e) {
-        console.error(e);
+        if (res.statusCode == 200) {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= The SMS has been sent to your mobile.");
+        } else if (res.statusCode == 400) {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= One of the paramaters is missing.");
+        } else if (res.statusCode == 402) {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= Too many SMS sent.");
+        } else if (res.statusCode == 403) {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= Service is not activated or incorrect credentials");
+        } else if (res.statusCode == 500) {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= Server side error. Retry later.");
+        } else {
+            console.log("Status = " + res.statusCode);
+            console.log("Details= Error not listed");
+        };
+    }).on("error", function(err) {
+        console.log("Error  = " + err);
     });
 }
 
